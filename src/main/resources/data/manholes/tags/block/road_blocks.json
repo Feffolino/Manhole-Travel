@@ -1,0 +1,14 @@
+{
+  "values": [
+    "minecraft:dirt_path",
+    {
+      "id": "#c:concretes",
+      "required": false
+    },
+    "minecraft:gray_concrete",
+    "minecraft:black_concrete",
+    "minecraft:stone_bricks",
+    "minecraft:polished_andesite",
+    "minecraft:smooth_stone"
+  ]
+}

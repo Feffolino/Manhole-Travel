@@ -1,0 +1,13 @@
+{
+  "entries": [
+    {
+      "enum": "net/minecraft/client/model/HumanoidModel$ArmPose",
+      "name": "MANHOLES_PRY",
+      "constructor": "(ZLnet/neoforged/neoforge/client/IArmPoseTransformer;)V",
+      "parameters": {
+        "class": "it/ratlab/manholes/client/CrowbarPose",
+        "field": "PRY_POSE"
+      }
+    }
+  ]
+}

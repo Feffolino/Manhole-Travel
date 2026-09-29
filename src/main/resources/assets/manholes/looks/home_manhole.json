@@ -1,0 +1,33 @@
+{
+  "base_closed": "manholes:block/parts/home_manhole_base_closed",
+  "base_open": "manholes:block/parts/home_manhole_base_open",
+  "lid_parts": [
+    {
+      "model": "manholes:block/parts/home_manhole_lid_0",
+      "open": {
+        "rotate": {
+          "axis": "x",
+          "angle": 100,
+          "origin": [
+            8,
+            2.2,
+            17
+          ]
+        }
+      }
+    },
+    {
+      "model": "manholes:block/parts/home_manhole_lid_1",
+      "open": {
+        "translate": [
+          0,
+          3.2,
+          0
+        ]
+      }
+    }
+  ],
+  "duration_ticks": 12,
+  "sound_open": "manholes:manhole.slide",
+  "sound_close": "manholes:manhole.slide"
+}

@@ -1,0 +1,60 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="Rat Lab"
+credits="Built for the Rat Lab modpack. Thanks to the NeoForge, KubeJS and FTB teams for their APIs."
+# Placeholder until the CurseForge project page exists.
+displayURL="https://www.curseforge.com/minecraft/mc-mods/manhole-travel"
+logoFile="manholes_logo.png"
+# Client-only arm pose of the crowbar while prying (HumanoidModel.ArmPose is extended; never loaded on a server).
+enumExtensions="META-INF/enumextensions.json"
+description='''
+Pry open rusted manhole covers found around the world (the noise draws the undead) and
+turn them into fast-travel nodes of your team's sewer network. Map screen with real
+terrain, a climb-down / climb-up animation, animated covers with datapack-selectable looks,
+rust levels and a button-mashing lever minigame.
+
+Everything is data-driven: spawn rules and looks from datapacks, tags, configs, commands
+and a full KubeJS API. Optional FTB Teams (shared networks), FTB Chunks (map icons and
+terrain) and KubeJS integration; only NeoForge is required.
+'''
+
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.1,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="kubejs"
+    type="optional"
+    versionRange="${kubejs_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="ftbteams"
+    type="optional"
+    versionRange="${ftbteams_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="ftbchunks"
+    type="optional"
+    versionRange="[2101.1,)"
+    ordering="NONE"
+    side="CLIENT"

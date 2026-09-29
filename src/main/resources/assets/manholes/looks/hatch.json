@@ -1,0 +1,55 @@
+{
+  "base_closed": "manholes:block/parts/hatch_base_closed",
+  "base_open": "manholes:block/parts/hatch_base_open",
+  "lid_parts": [
+    {
+      "model": "manholes:block/parts/hatch_lid_0",
+      "open": {
+        "rotate": {
+          "axis": "z",
+          "angle": -100,
+          "origin": [
+            17,
+            2.25,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "model": "manholes:block/parts/hatch_lid_1",
+      "open": {
+        "translate": [
+          0,
+          3.2,
+          0
+        ]
+      }
+    }
+  ],
+  "duration_ticks": 12,
+  "sound_open": "manholes:manhole.slide",
+  "sound_close": "manholes:manhole.slide",
+  "condition_overlays": [
+    {
+      "part": 0,
+      "levels": {
+        "1": "manholes:block/parts/hatch_lid_0_cond_1",
+        "2": "manholes:block/parts/hatch_lid_0_cond_2",
+        "3": "manholes:block/parts/hatch_lid_0_cond_3"
+      }
+    }
+  ],
+  "base_condition_overlays": {
+    "closed": {
+      "1": "manholes:block/parts/hatch_base_closed_cond_1",
+      "2": "manholes:block/parts/hatch_base_closed_cond_2",
+      "3": "manholes:block/parts/hatch_base_closed_cond_3"
+    },
+    "open": {
+      "1": "manholes:block/parts/hatch_base_open_cond_1",
+      "2": "manholes:block/parts/hatch_base_open_cond_2",
+      "3": "manholes:block/parts/hatch_base_open_cond_3"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "type": "scatter",
+  "chance_per_chunk": 0.004,
+  "dimensions": ["minecraft:overworld"],
+  "biomes": ["#minecraft:is_mountain", "#c:is_mountain", "minecraft:stony_peaks", "minecraft:windswept_gravelly_hills"],
+  "on_blocks": ["#minecraft:base_stone_overworld", "minecraft:gravel"],
+  "block": "manholes:cave_hole",
+  "min_distance": 256
+}

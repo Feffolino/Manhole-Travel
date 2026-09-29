@@ -1,0 +1,9 @@
+{
+  "type": "scatter",
+  "chance_per_chunk": 0.0025,
+  "dimensions": ["minecraft:overworld"],
+  "biomes": ["#c:is_plains", "#minecraft:is_forest"],
+  "on_blocks": ["#minecraft:dirt", "minecraft:grass_block"],
+  "block": "manholes:hatch",
+  "min_distance": 256
+}

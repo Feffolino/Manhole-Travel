@@ -1,0 +1,75 @@
+{
+  "base_closed": "manholes:block/parts/cave_base_closed",
+  "base_open": "manholes:block/parts/cave_base_open",
+  "lid_parts": [
+    {
+      "model": "manholes:block/parts/cave_lid_0",
+      "open": {
+        "translate": [
+          0,
+          -5.3,
+          0
+        ]
+      }
+    },
+    {
+      "model": "manholes:block/parts/cave_lid_1",
+      "open": {
+        "translate": [
+          0,
+          -4.9,
+          0
+        ]
+      }
+    },
+    {
+      "model": "manholes:block/parts/cave_lid_2",
+      "open": {
+        "translate": [
+          0,
+          -4.6,
+          0
+        ]
+      }
+    },
+    {
+      "model": "manholes:block/parts/cave_lid_3",
+      "open": {
+        "translate": [
+          0,
+          3.2,
+          0
+        ]
+      }
+    }
+  ],
+  "duration_ticks": 12,
+  "sound_open": "manholes:manhole.slide",
+  "sound_close": "manholes:manhole.slide",
+  "condition_overlays": [
+    {
+      "part": 0,
+      "levels": {
+        "1": "manholes:block/parts/cave_lid_0_cond_1",
+        "2": "manholes:block/parts/cave_lid_0_cond_2",
+        "3": "manholes:block/parts/cave_lid_0_cond_3"
+      }
+    },
+    {
+      "part": 1,
+      "levels": {
+        "1": "manholes:block/parts/cave_lid_1_cond_1",
+        "2": "manholes:block/parts/cave_lid_1_cond_2",
+        "3": "manholes:block/parts/cave_lid_1_cond_3"
+      }
+    },
+    {
+      "part": 2,
+      "levels": {
+        "1": "manholes:block/parts/cave_lid_2_cond_1",
+        "2": "manholes:block/parts/cave_lid_2_cond_2",
+        "3": "manholes:block/parts/cave_lid_2_cond_3"
+      }
+    }
+  ]
+}
