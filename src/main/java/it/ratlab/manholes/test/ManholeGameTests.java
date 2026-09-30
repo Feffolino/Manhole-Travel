@@ -1548,4 +1548,30 @@ public final class ManholeGameTests {
         h.assertTrue(!TravelHandler.ambushAllowedAt(home), "home manhole must be safe by default");
         h.succeed();
     }
+
+    // ---------------------------------------------------------------- 1.7.2
+
+    /**
+     * 1.7.2: covers are chunk-meshed at rest (RenderShape.MODEL, the client model reads the block entity's model data);
+     * the server-side parts: render shape, model data keys and defaults, animation flag off on the server.
+     */
+    @GameTest(templateNamespace = NS, template = TEMPLATE)
+    public static void coverMeshModelData(GameTestHelper h) {
+        for (ManholeBlock b : ManholeBlock.all()) {
+            h.assertValueEqual(b.defaultBlockState().getRenderShape(), net.minecraft.world.level.block.RenderShape.MODEL,
+                    b.id() + " render shape");
+        }
+        if (!(h.getLevel().getBlockEntity(h.absolutePos(SAMPLE_MANHOLE)) instanceof ManholeBlockEntity be)) {
+            h.fail("sample manhole block entity missing");
+            return;
+        }
+        be.setRust(2);
+        var data = be.getModelData();
+        h.assertValueEqual(data.get(ManholeBlockEntity.RUST), 2, "model data rust");
+        h.assertValueEqual(data.get(ManholeBlockEntity.ANIMATING), Boolean.FALSE, "model data animating");
+        be.refreshMesh(true); // no-op on the server
+        be.finishAnimation();
+        h.assertTrue(!be.animating, "server never animates");
+        h.succeed();
+    }
 }

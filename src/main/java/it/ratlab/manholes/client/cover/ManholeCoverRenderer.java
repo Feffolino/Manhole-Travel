@@ -26,8 +26,12 @@ import net.neoforged.neoforge.client.model.data.ModelData;
  * Draws a manhole cover from its look ({@link CoverLooks}): {@code base_open} / {@code base_closed} plus the lid parts,
  * each moved from its closed pose (t = 0) to its {@code open} pose (t = 1) with ease-in-out over the look's
  * {@code duration_ticks}, starting at {@link ManholeBlockEntity#animStart}. Everything is in the model's north-facing
- * frame, then rotated by the block's {@code facing} like the blockstate's {@code y} rotation. The block itself renders
- * nothing ({@code RenderShape.ENTITYBLOCK_ANIMATED}); without a usable look the blockstate's own (static) model is drawn.
+ * frame, then rotated by the block's {@code facing} like the blockstate's {@code y} rotation.
+ * <p>
+ * 1.7.2: only while the animation runs ({@link ManholeBlockEntity#animating}). At rest the cover is part of the chunk
+ * mesh ({@link CoverBakedModel}, same quads at t = 0 / 1) and this renderer draws nothing, so there's no double geometry.
+ * When the animation reaches its end the renderer hands the cover back to the mesh
+ * ({@link ManholeBlockEntity#finishAnimation}) and still draws that one frame, so the cover never blinks out.
  */
 public final class ManholeCoverRenderer implements BlockEntityRenderer<ManholeBlockEntity> {
     private final BlockRenderDispatcher blocks;
@@ -69,13 +73,19 @@ public final class ManholeCoverRenderer implements BlockEntityRenderer<ManholeBl
         if (!(state.getBlock() instanceof ManholeBlock)) {
             return;
         }
+        if (!be.animating) {
+            return; // 1.7.2: at rest the chunk mesh has the cover
+        }
         CoverLooks.Look look = CoverLooks.get(be.look());
-        if (look == null) {
-            draw(ps, buffers, state, blocks.getBlockModel(state), light, overlay); // static, already rotated
+        if (look == null || !ManholesClientConfig.animateCovers() || be.animStart == Long.MIN_VALUE || be.getLevel() == null) {
+            be.finishAnimation(); // look gone after a reload, animations turned off: back to the static mesh
             return;
         }
         boolean open = state.getValue(ManholeBlock.OPEN);
         float t = openness(be, open, look.durationTicks(), partialTick);
+        if (be.getLevel().getGameTime() - be.animStart + partialTick >= look.durationTicks()) {
+            be.finishAnimation(); // drawn at the end pose this frame, by the mesh from the next one
+        }
         var models = Minecraft.getInstance().getModelManager();
 
         ps.pushPose();

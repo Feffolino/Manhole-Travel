@@ -25,6 +25,8 @@ your sewer network. From then on, right-click any opened manhole to open the map
   trial chambers, ocean structures, oceans, rivers, the Nether and the End.
 - **Covers in the wild** (1.7.0): cave holes in the mountains, drain grates in swamps and wooden hatches in plains
   and forests, rare (one per few hundred chunks) and at least 256 blocks apart.
+- **Shader friendly** (1.7.2): covers at rest are part of the world mesh, so shader packs and flashlight mods light
+  them like the ground around them; only the opening / closing animation is drawn separately.
 - **Solid covers** (1.7.0): the hitbox matches the whole cover (the hatch stays one block). Water and lava can't wash
   covers away, pistons can't push them, and they're tagged so moving mods leave them alone
   (`#c:relocation_not_supported`, Mekanism's cardboard box, Create contraptions).
