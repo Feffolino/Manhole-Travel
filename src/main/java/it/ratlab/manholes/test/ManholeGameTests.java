@@ -1536,4 +1536,16 @@ public final class ManholeGameTests {
         }
         h.succeed();
     }
+
+    /** Arriving home is safe by default (ambushAtHome = false); world covers can ambush. */
+    @GameTest(templateNamespace = NS, template = TEMPLATE)
+    public static void ambushSkipsHomeByDefault(GameTestHelper h) {
+        NodeRecord world = new NodeRecord(UUID.randomUUID(), h.getLevel().dimension(), h.absolutePos(SAMPLE_MANHOLE));
+        NodeRecord home = new NodeRecord(UUID.randomUUID(), h.getLevel().dimension(), h.absolutePos(SAMPLE_MANHOLE));
+        home.home = true;
+        h.assertTrue(TravelHandler.ambushAllowedAt(world), "world manhole should allow ambushes");
+        h.assertTrue(!ManholesConfig.b(ManholesConfig.AMBUSH_AT_HOME), "ambushAtHome default should be false");
+        h.assertTrue(!TravelHandler.ambushAllowedAt(home), "home manhole must be safe by default");
+        h.succeed();
+    }
 }

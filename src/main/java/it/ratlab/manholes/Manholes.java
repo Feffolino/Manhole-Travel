@@ -48,6 +48,9 @@ public final class Manholes {
         if (ModList.get().isLoaded("ftbteams")) {
             Hooks.enableFTBTeams();
         }
+        if (ModList.get().isLoaded("ftbchunks")) {
+            Hooks.enableFTBChunks();
+        }
         if (Boolean.getBoolean("manholes.gametests")) {
             it.ratlab.manholes.test.ManholeGameTests.register(modBus);
         }

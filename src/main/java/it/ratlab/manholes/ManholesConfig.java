@@ -128,6 +128,9 @@ public final class ManholesConfig {
             .defineInRange("ambushCountMin", 1, 0, 32);
     public static final ModConfigSpec.IntValue AMBUSH_COUNT_MAX = B
             .defineInRange("ambushCountMax", 2, 0, 32);
+    public static final ModConfigSpec.BooleanValue AMBUSH_AT_HOME = B
+            .comment("Ambushes can also happen when arriving at a home manhole (false = home is safe).")
+            .define("ambushAtHome", false);
     public static final ModConfigSpec.IntValue COMBAT_COOLDOWN_TICKS = B
             .comment("A player who took damage in the last N ticks is 'in combat' and can't travel.")
             .defineInRange("combatCooldownTicks", 100, 0, 12_000);

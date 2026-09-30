@@ -394,6 +394,8 @@ KubeJS, FTB Teams and FTB Chunks (client) are `type="optional"` in `neoforge.mod
 | `travel.extraItemCostCount` | 1 | |
 | `travel.ambushChance` | 0.1 | |
 | `travel.ambushCountMin` / `ambushCountMax` | 1 / 2 | |
+| `travel.ambushAtHome` | false | 1.7.1: ambushes when arriving at a home manhole too (`TravelHandler.ambushAllowedAt`) |
+| (no key) | | 1.7.1: never an ambush when the arrival manhole's chunk is claimed (FTB Chunks, `compat/ClaimHooks`); FTB Chunks dependency now side BOTH |
 | `travel.combatCooldownTicks` | 100 | |
 | `travel.travelCooldownTicks` | 100 | |
 | `travel.animationEnabled` | true | climb animation around the fade |

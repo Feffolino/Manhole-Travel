@@ -521,7 +521,7 @@ public final class TravelHandler {
         player.displayClientMessage(Component.translatable("manholes.travel.arrived",
                 ManholeData.get(player.server).displayName(Owners.ownerOf(player), to, player.registryAccess())), true);
         boolean builtinAmbush = Hooks.kube().arrived(player, to);
-        if (builtinAmbush && !s.scripted && player.level() instanceof ServerLevel level) {
+        if (builtinAmbush && !s.scripted && ambushAllowedAt(to) && player.level() instanceof ServerLevel level) {
             ambush(player, level, to.pos);
         }
     }
@@ -594,10 +594,18 @@ public final class TravelHandler {
 
     // ---------------------------------------------------------------- ambush
 
+    /** Home manholes are safe unless {@code ambushAtHome} is on. */
+    public static boolean ambushAllowedAt(NodeRecord to) {
+        return !to.home || ManholesConfig.b(ManholesConfig.AMBUSH_AT_HOME);
+    }
+
     private static void ambush(ServerPlayer player, ServerLevel level, BlockPos at) {
         double chance = ManholesConfig.d(ManholesConfig.AMBUSH_CHANCE);
         if (chance <= 0 || level.random.nextDouble() >= chance || player.isCreative() || player.isSpectator()) {
             return;
+        }
+        if (it.ratlab.manholes.compat.Hooks.claims().isClaimed(level, at)) {
+            return; // never in a claimed chunk (FTB Chunks), whatever ambushAtHome says
         }
         Optional<HolderSet.Named<EntityType<?>>> tag = BuiltInRegistries.ENTITY_TYPE.getTag(ModRegistry.AMBUSH_MOBS);
         if (tag.isEmpty() || tag.get().size() == 0) {

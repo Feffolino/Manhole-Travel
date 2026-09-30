@@ -63,6 +63,9 @@ Datapacks and KubeJS can still replace or remove them by id (`manholes:crowbar`,
 | `travel.hungerCostPerKm` / `timeCostPerKm` | 2.0 / 1000 | |
 | `travel.extraItemCost` | "" | item id or `#tag` |
 | `travel.ambushChance` | 0.1 | mobs from `#manholes:ambush_mobs` (empty by default) |
+| `travel.ambushAtHome` | false | home manholes are safe unless enabled |
+
+With FTB Chunks, manholes in claimed chunks never ambush.
 | `travel.animationEnabled` | true | climb animation |
 
 `config/manholes-client.toml`: `mashKey` (`JUMP` / `ATTACK`), `animateCovers` (true), `showConditionOverlays` (true).

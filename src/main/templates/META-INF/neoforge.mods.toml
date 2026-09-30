@@ -57,4 +57,4 @@ terrain) and KubeJS integration; only NeoForge is required.
     type="optional"
     versionRange="[2101.1,)"
     ordering="NONE"
-    side="CLIENT"
+    side="BOTH"
