@@ -49,3 +49,6 @@ libs/
 run-kubejs/
 __pycache__/
 *.pyc
+
+# Private publishing checklist (kept local)
+PUBLISH_CURSEFORGE.md
