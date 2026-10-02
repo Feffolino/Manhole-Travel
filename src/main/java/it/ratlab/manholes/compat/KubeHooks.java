@@ -2,6 +2,7 @@
 package it.ratlab.manholes.compat;
 
 import it.ratlab.manholes.data.NodeRecord;
+import it.ratlab.manholes.travel.TravelContext;
 import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -19,6 +20,10 @@ public interface KubeHooks {
 
     default float mash(ServerPlayer player, NodeRecord node, float progress, int presses, float amount) {
         return amount;
+    }
+
+    default boolean travel(TravelContext ctx) {
+        return true;
     }
 
     default boolean arrived(ServerPlayer player, NodeRecord node) {

@@ -5,7 +5,10 @@ import com.mojang.logging.LogUtils;
 import it.ratlab.manholes.command.ManholeCommands;
 import it.ratlab.manholes.compat.Hooks;
 import it.ratlab.manholes.gen.WorldGenHandler;
+import it.ratlab.manholes.net.ManholeNetworking;
 import it.ratlab.manholes.travel.HomeManholes;
+import it.ratlab.manholes.travel.NetworkSync;
+import it.ratlab.manholes.travel.PryHandler;
 import it.ratlab.manholes.travel.TravelHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -31,10 +34,14 @@ public final class Manholes {
         ModRegistry.register(modBus);
         modBus.addListener(Manholes::addToTabs);
 
+        ManholeNetworking.init();
+
         MinecraftForge.EVENT_BUS.addListener(ManholeCommands::register);
         HomeManholes.registerEvents(MinecraftForge.EVENT_BUS);
         WorldGenHandler.registerEvents(MinecraftForge.EVENT_BUS);
         TravelHandler.registerEvents(MinecraftForge.EVENT_BUS);
+        PryHandler.registerEvents(MinecraftForge.EVENT_BUS);
+        NetworkSync.registerEvents(MinecraftForge.EVENT_BUS);
 
         if (ModList.get().isLoaded("kubejs")) {
             Hooks.enableKubeJS();
