@@ -2,10 +2,17 @@
 package it.ratlab.manholes;
 
 import com.mojang.logging.LogUtils;
+import it.ratlab.manholes.command.ManholeCommands;
+import it.ratlab.manholes.compat.Hooks;
+import it.ratlab.manholes.gen.WorldGenHandler;
+import it.ratlab.manholes.travel.HomeManholes;
+import it.ratlab.manholes.travel.TravelHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -23,6 +30,21 @@ public final class Manholes {
         ManholesStartupConfig.load();
         ModRegistry.register(modBus);
         modBus.addListener(Manholes::addToTabs);
+
+        MinecraftForge.EVENT_BUS.addListener(ManholeCommands::register);
+        HomeManholes.registerEvents(MinecraftForge.EVENT_BUS);
+        WorldGenHandler.registerEvents(MinecraftForge.EVENT_BUS);
+        TravelHandler.registerEvents(MinecraftForge.EVENT_BUS);
+
+        if (ModList.get().isLoaded("kubejs")) {
+            Hooks.enableKubeJS();
+        }
+        if (ModList.get().isLoaded("ftbteams")) {
+            Hooks.enableFTBTeams();
+        }
+        if (ModList.get().isLoaded("ftbchunks")) {
+            Hooks.enableFTBChunks();
+        }
     }
 
     public static ResourceLocation id(String path) {
