@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "manholes:home_manhole",
+      "required": false
+    },
+    {
+      "id": "manholes:hatch",
+      "required": false
+    },
+    {
+      "id": "manholes:grate",
+      "required": false
+    },
+    {
+      "id": "manholes:cave_hole",
+      "required": false
+    },
+    {
+      "id": "manholes:city_manhole",
+      "required": false
+    }
+  ]
+}

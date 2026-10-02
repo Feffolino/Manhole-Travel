@@ -1,0 +1,10 @@
+{
+  "values": [
+    "manholes:crowbar",
+    { "id": "#forge:tools/crowbars", "required": false },
+    { "id": "#forge:crowbars", "required": false },
+    { "id": "#c:tools/crowbars", "required": false },
+    { "id": "#c:crowbars", "required": false },
+    { "id": "zombie_island:crowbar", "required": false }
+  ]
+}

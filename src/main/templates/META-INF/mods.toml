@@ -1,0 +1,57 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="Rat Lab, Stefano Manca"
+credits="Built for the Rat Lab modpack. Thanks to the Forge, KubeJS and FTB teams for their APIs."
+displayURL="https://www.curseforge.com/minecraft/mc-mods/manhole-travel"
+logoFile="logo.png"
+description='''
+Pry open rusted manhole covers found around the world (the noise draws the undead) and
+turn them into fast-travel nodes of your team's sewer network. Map screen with real
+terrain, a climb-down / climb-up animation, animated covers with datapack-selectable looks,
+rust levels and a button-mashing lever minigame.
+
+Everything is data-driven: spawn rules and looks from datapacks, tags, configs, commands
+and a full KubeJS API. Optional FTB Teams (shared networks), FTB Chunks (map icons and
+terrain) and KubeJS integration; only Forge is required.
+'''
+
+[[dependencies.${mod_id}]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="kubejs"
+    mandatory=false
+    versionRange="${kubejs_version_range}"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="ftbteams"
+    mandatory=false
+    versionRange="${ftbteams_version_range}"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="ftbchunks"
+    mandatory=false
+    versionRange="${ftbchunks_version_range}"
+    ordering="AFTER"
+    side="BOTH"

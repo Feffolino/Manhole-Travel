@@ -1,0 +1,139 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev.legacyforge' version '2.0.147'
+    id 'idea'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+version = mod_version
+group = mod_group_id
+
+sourceSets.main.resources {
+    srcDir('src/generated/resources')
+    exclude("**/*.bbmodel")
+    exclude("src/generated/**/.cache")
+}
+
+repositories {
+    maven { name = "LatvianModder (KubeJS, Rhino)"; url = "https://maven.latvian.dev/releases"
+            content { includeGroup "dev.latvian.mods" } }
+    maven { name = "FTB"; url = "https://maven.ftb.dev/releases"
+            content { includeGroup "dev.ftb.mods" } }
+    maven { name = "Architectury"; url = "https://maven.architectury.dev"
+            content { includeGroup "dev.architectury" } }
+    maven { name = "Parchment"; url = "https://maven.parchmentmc.org" }
+}
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+legacyForge {
+    version = project.forge_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    runs {
+        client {
+            client()
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'forge.logging.console.level', 'debug'
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'forge.logging.console.level', 'debug'
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'forge.logging.console.level', 'debug'
+            systemProperty 'forge.enabledGameTestNamespaces', "${project.mod_id},manholes_test"
+            systemProperty 'manholes.gametests', 'true'
+        }
+
+        gameTestServerKubeJS {
+            type = "gameTestServer"
+            gameDirectory = project.file('run-kubejs')
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'forge.logging.console.level', 'debug'
+            systemProperty 'forge.enabledGameTestNamespaces', "${project.mod_id},manholes_test"
+            systemProperty 'manholes.gametests', 'true'
+        }
+
+        data {
+            data()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'forge.logging.console.level', 'debug'
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+configurations {
+    localRuntime
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    compileOnly("dev.latvian.mods:kubejs-forge:2001.6.5-build.26") { transitive = false }
+    compileOnly("dev.latvian.mods:rhino-forge:2001.2.3-build.10") { transitive = false }
+    compileOnly("dev.ftb.mods:ftb-teams-forge:2001.3.2") { transitive = false }
+    compileOnly("dev.ftb.mods:ftb-library-forge:2001.2.13") { transitive = false }
+    compileOnly("dev.ftb.mods:ftb-chunks-forge:2001.3.8") { transitive = false }
+    compileOnly("dev.architectury:architectury-forge:9.2.14") { transitive = false }
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            forge_version          : forge_version,
+            forge_version_range    : forge_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            kubejs_version_range   : kubejs_version_range,
+            ftbteams_version_range : ftbteams_version_range,
+            ftbchunks_version_range: ftbchunks_version_range,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+
+sourceSets.main.resources.srcDir generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('jar', Jar).configure {
+    from('LICENSE')
+}

@@ -1,0 +1,102 @@
+{
+  "manhole.pry": {
+    "subtitle": "subtitles.manholes.manhole.pry",
+    "sounds": [
+      {
+        "name": "minecraft:block.grindstone.use",
+        "type": "event"
+      }
+    ]
+  },
+  "manhole.open": {
+    "subtitle": "subtitles.manholes.manhole.open",
+    "sounds": [
+      {
+        "name": "minecraft:block.iron_trapdoor.open",
+        "type": "event"
+      }
+    ]
+  },
+  "travel.footstep": {
+    "sounds": [
+      {
+        "name": "minecraft:block.stone.step",
+        "type": "event"
+      }
+    ]
+  },
+  "travel.drip": {
+    "sounds": [
+      {
+        "name": "minecraft:block.pointed_dripstone.drip_water",
+        "type": "event"
+      }
+    ]
+  },
+  "travel.arrive": {
+    "subtitle": "subtitles.manholes.travel.arrive",
+    "sounds": [
+      {
+        "name": "minecraft:block.iron_trapdoor.close",
+        "type": "event"
+      }
+    ]
+  },
+  "manhole.insert": {
+    "subtitle": "subtitles.manholes.manhole.insert",
+    "sounds": [
+      {
+        "name": "minecraft:block.chain.place",
+        "type": "event"
+      }
+    ]
+  },
+  "manhole.lever": {
+    "subtitle": "subtitles.manholes.manhole.lever",
+    "sounds": [
+      {
+        "name": "minecraft:block.iron_door.open",
+        "type": "event"
+      },
+      {
+        "name": "minecraft:block.chain.step",
+        "type": "event"
+      }
+    ]
+  },
+  "manhole.skill_success": {
+    "subtitle": "subtitles.manholes.manhole.skill_success",
+    "sounds": [
+      {
+        "name": "minecraft:block.chain.hit",
+        "type": "event"
+      }
+    ]
+  },
+  "manhole.skill_fail": {
+    "subtitle": "subtitles.manholes.manhole.skill_fail",
+    "sounds": [
+      {
+        "name": "minecraft:block.anvil.land",
+        "type": "event"
+      }
+    ]
+  },
+  "manhole.slide": {
+    "subtitle": "subtitles.manholes.manhole.slide",
+    "sounds": [
+      {
+        "name": "minecraft:block.grindstone.use",
+        "type": "event"
+      }
+    ]
+  },
+  "travel.ladder": {
+    "sounds": [
+      {
+        "name": "minecraft:block.ladder.step",
+        "type": "event"
+      }
+    ]
+  }
+}

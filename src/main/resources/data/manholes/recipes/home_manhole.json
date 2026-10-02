@@ -1,0 +1,29 @@
+{
+  "conditions": [
+    {
+      "type": "manholes:default_recipes_enabled"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "ISI",
+    "STS",
+    "ISI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "minecraft:stone_bricks"
+    },
+    "T": {
+      "item": "minecraft:iron_trapdoor"
+    }
+  ],
+  "result": {
+    "item": "manholes:home_manhole",
+    "count": 1
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "structure",
+  "structures": "minecraft:pillager_outpost",
+  "chance": 0.5,
+  "max_per_structure": 1,
+  "name_from_structure": true,
+  "placement": {
+    "surface_only": true,
+    "avoid_blocks": "#minecraft:leaves",
+    "margin": 0
+  },
+  "block": "manholes:city_manhole",
+  "offset": [
+    6,
+    24
+  ]
+}

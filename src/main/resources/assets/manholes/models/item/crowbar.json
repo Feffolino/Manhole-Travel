@@ -1,0 +1,4 @@
+{
+  "parent": "manholes:item/crowbar_3d",
+  "gui_light": "side"
+}

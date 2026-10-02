@@ -1,0 +1,39 @@
+{
+  "base_closed": "manholes:block/parts/city_base_closed",
+  "base_open": "manholes:block/parts/city_base_open",
+  "lid_parts": [
+    {
+      "model": "manholes:block/parts/city_lid_0",
+      "open": {
+        "translate": [
+          0,
+          0.1,
+          10
+        ]
+      }
+    },
+    {
+      "model": "manholes:block/parts/city_lid_1",
+      "open": {
+        "translate": [
+          0,
+          3.2,
+          0
+        ]
+      }
+    }
+  ],
+  "duration_ticks": 12,
+  "sound_open": "manholes:manhole.slide",
+  "sound_close": "manholes:manhole.slide",
+  "condition_overlays": [
+    {
+      "part": 0,
+      "levels": {
+        "1": "manholes:block/parts/city_lid_0_cond_1",
+        "2": "manholes:block/parts/city_lid_0_cond_2",
+        "3": "manholes:block/parts/city_lid_0_cond_3"
+      }
+    }
+  ]
+}
