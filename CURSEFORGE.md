@@ -1,7 +1,7 @@
 # Manhole Travel
 
 **Pry open rusted manhole covers and travel through your team's sewer network.**
-NeoForge 1.21.1. Only NeoForge is required; KubeJS, FTB Teams and FTB Chunks are optional.
+Forge 1.20.1. Only Forge is required; KubeJS, FTB Teams and FTB Chunks are optional.
 
 Manhole covers turn up around villages and outposts (or wherever a datapack puts them). They're rusted shut. Wedge a crowbar
 in, mash the lever while the noise draws every zombie around, drag the cover aside, and the manhole becomes a node of
@@ -22,12 +22,12 @@ your sewer network. From then on, right-click any opened manhole to open the map
   command or KubeJS pick the block. Resource packs can restyle each look and its map icon.
 - **Covers around structures**: generated covers sit in a ring 6-24 blocks outside a structure (configurable per
   rule), never inside any structure. A config blacklist keeps them away from mineshafts, strongholds, ancient cities,
-  trial chambers, ocean structures, oceans, rivers, the Nether and the End.
+  ocean structures, oceans, rivers, the Nether and the End.
 - **Covers in the wild** (1.7.0): cave holes in the mountains, drain grates in swamps and wooden hatches in plains
   and forests, rare (one per few hundred chunks) and at least 256 blocks apart.
 - **Solid covers** (1.7.0): the hitbox matches the whole cover (the hatch stays one block). Water and lava can't wash
   covers away, pistons can't push them, and they're tagged so moving mods leave them alone
-  (`#c:relocation_not_supported`, Mekanism's cardboard box, Create contraptions).
+  (`#forge:relocation_not_supported`, Mekanism's cardboard box, Create contraptions).
 - **Home manhole**: a craftable, personal travel point. It belongs to whoever places it and is private: only you see
   it and travel to it. Turn on "Share with team" (in its map popup, by sneak + right-click, or with
   `/manholes share`) and your FTB team mates can use it too. Only the owner breaks it or renames it.
@@ -39,7 +39,7 @@ your sewer network. From then on, right-click any opened manhole to open the map
 - **Crowbar**: 3 iron ingots in a diagonal, plus 1 red dye next to the top one.
 - **Home manhole**: 4 iron ingots in the corners, 4 stone bricks on the sides, an iron trapdoor in the centre.
 
-Both use the NeoForge load condition `manholes:default_recipes_enabled` (config `recipes.enableDefaultRecipes`).
+Both use the Forge crafting condition `manholes:default_recipes_enabled` (config `recipes.enableDefaultRecipes`).
 Datapacks and KubeJS can still replace or remove them by id (`manholes:crowbar`, `manholes:home_manhole`).
 
 ## Config

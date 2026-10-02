@@ -1,18 +1,26 @@
-# Manhole Travel (`manholes`) 1.7.0
+# Manhole Travel (`manholes`) 1.7.3-1.20.1
 
-NeoForge 1.21.1 mod, MIT. Project layout mirrors `Desktop/omegafe` (MDK-1.21.1-ModDevGradle, MDG 2.0.147, Gradle 9.2.1).
-Build: `JAVA_HOME="/c/Program Files/Java/jdk-25" ./gradlew build` produces `build/libs/manholes-1.7.0.jar`.
-Public docs: `CURSEFORGE.md` (page text) and `README.md`.
+Minecraft Forge 1.20.1 mod (Forge 47.4.23, Java 17 toolchain, ModDevGradle `legacyforge` 2.0.147).
+Ported from NeoForge 1.21.1 (HEAD `46fdcc3`) for the "Rat Lab" modpack (`RatLab (1)`).
+Build: `$env:JAVA_HOME = "C:\Program Files\Java\jdk-22"; .\gradlew.bat build` produces `build/libs/manholes-1.7.3-1.20.1.jar`.
+Game tests: `$env:JAVA_HOME = "C:\Program Files\Java\jdk-22"; .\gradlew.bat runGameTestServer` (all 29/29 tests pass).
 
-Manhole covers are found around the world. You pry one open while the noise draws the undead, and from then on it's a
-fast-travel node of your team's sewer network. The mod has no pack-specific content. Everything specific to a pack lives
-in config, tags, datapack JSON and KubeJS.
-
-**Zero required dependencies.** Only NeoForge is needed, and the mod uses only NeoForge config, networking and SavedData.
-KubeJS, FTB Teams and FTB Chunks (client) are `type="optional"` in `neoforge.mods.toml` and `compileOnly` in Gradle
-(local jars in `libs/`, plus Architectury for FTB Chunks' event type). All their code is in `compat/kubejs`,
-`compat/ftbteams` and `compat/ftbchunks`, and those classes load only after a `ModList.isLoaded` check
-(`compat/Hooks`, `client/ManholesClient`). KubeJS finds the plugin through `kubejs.plugins.txt`.
+## Forge 1.20.1 Port & Architecture Decisions
+- **Build system:** ModDevGradle 2.0.147 (`legacyforge`) with Gradle 8.10.2 and Java 17 toolchain via Foojay resolver. Chosen for fast compilation, clean multi-run support (`gameTestServer`, `client`), and exact Parchment 1.20.1 mapping support.
+- **Fresh-World Target (Removals):** Since Rat Lab 1.20.1 starts exclusively on fresh worlds, historical migrations from pre-1.5.0 saves were removed:
+  - Removed registry alias `manholes:manhole` -> `city_manhole`.
+  - Removed 1.3.0 `look`-NBT legacy conversion.
+  - Removed `ManholeData.migrateLegacyHomes`.
+  - Removed 3 obsolete tests (`manholeAlias`, `homeMigration`, `legacyLookConversion`). All remaining 29 functional tests ported and passing.
+- **Networking:** Replaced NeoForge `CustomPacketPayload` with Forge `SimpleChannel` (`NetworkRegistry.newSimpleChannel`) using protocol version `"5"`. Handlers execute on main server/client thread via `ctx.enqueueWork`.
+- **Crafting Condition:** `manholes:default_recipes_enabled` implemented as Forge `ICondition` with `Serializer` registered via `CraftingHelper.register` at mod initialization.
+- **Mod Data Pack Resources:** `src/main/resources/pack.mcmeta` added (`pack_format: 15`), required for Forge 1.20.1 to load mod data pack resources (recipes, tags, builtin spawn rules).
+- **Client Cover Rendering:** `ManholeCoverRenderer` (BER) renders all covers at all times (no chunk-mesh resting model), avoiding the 1-frame blink. `HumanoidModel.ArmPose.MANHOLES_PRY` registered dynamically via Forge's `IExtensibleEnum` in client initialization.
+- **World Generation:** Biome tags updated to Forge 1.20.1 conventions (`#forge:is_mountain`, `#forge:is_swamp`, `#forge:is_plains`). `WorldGenHandler.findSpot` includes fallback vertical scanning inside structure bounds when top heightmap is above `maxY + 3` (e.g. subterranean structures or test environments).
+- **Verification Status:**
+  - `gradlew build`: SUCCESS (`manholes-1.7.3-1.20.1.jar`, 445 KB, zero shaded dependencies).
+  - `gradlew runGameTestServer`: 29/29 GameTests pass cleanly.
+  - **Da testare in gioco nel modpack:** HUD visivo e mash con tastiera/mouse, animazione posa crowbar in prima/terza persona, resa visiva coperchi animati (apertura/chiusura) con condition overlay rust, rendering mappa schermata viaggio con terreno FTB Chunks, icone su mappa grande/minimap FTB Chunks.
 
 ## 1.7.3 changes
 - **Reverted 1.7.2** (chunk-meshed covers at rest, `CoverBakedModel`): the swap between the chunk mesh and the BER at
