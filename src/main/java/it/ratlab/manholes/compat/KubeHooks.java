@@ -2,6 +2,8 @@
 package it.ratlab.manholes.compat;
 
 import it.ratlab.manholes.data.NodeRecord;
+import it.ratlab.manholes.gen.GenerateContext;
+import it.ratlab.manholes.gen.SpawnRuleSet;
 import it.ratlab.manholes.travel.TravelContext;
 import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
@@ -9,6 +11,14 @@ import net.minecraft.server.level.ServerPlayer;
 /** KubeJS bridge. Without KubeJS nothing is posted and stages fall back to scoreboard tags. */
 public interface KubeHooks {
     KubeHooks NONE = new KubeHooks() {};
+
+    /** ManholeEvents.spawnRules: scripts may add, remove or modify rules. */
+    default void spawnRules(SpawnRuleSet rules) {}
+
+    /** ManholeEvents.generate. Returns false if a script cancelled it. */
+    default boolean generate(GenerateContext ctx) {
+        return true;
+    }
 
     default boolean pried(ServerPlayer player, NodeRecord node, UUID owner) {
         return true;
