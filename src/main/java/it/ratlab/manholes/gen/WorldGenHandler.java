@@ -375,6 +375,14 @@ public final class WorldGenHandler {
             int top = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x & 15, z & 15);
             BlockPos pos = new BlockPos(x, top + 1, z);
             if (rule.type == SpawnRule.Type.STRUCTURE && (pos.getY() < minY - 1 || pos.getY() > maxY + 3)) {
+                int hi = Math.min(maxY + 1, level.getMaxBuildHeight() - 2);
+                int lo = Math.max(minY, level.getMinBuildHeight() + 1);
+                for (int y = hi; y >= lo; y--) {
+                    BlockPos p = new BlockPos(x, y, z);
+                    if (valid(level, chunk, rule, p, false)) {
+                        return p;
+                    }
+                }
                 return null;
             }
             return valid(level, chunk, rule, pos, true) ? pos : null;

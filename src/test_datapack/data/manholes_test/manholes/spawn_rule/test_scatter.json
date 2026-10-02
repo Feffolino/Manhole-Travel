@@ -1,0 +1,13 @@
+{
+  "type": "scatter",
+  "chance_per_chunk": 0.02,
+  "on_blocks": "#manholes:road_blocks",
+  "dimensions": [
+    "minecraft:overworld"
+  ],
+  "biomes": "#minecraft:is_overworld",
+  "min_distance": 256,
+  "name": {
+    "text": "Roadside Manhole"
+  }
+}

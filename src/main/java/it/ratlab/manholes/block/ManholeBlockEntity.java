@@ -49,6 +49,9 @@ public class ManholeBlockEntity extends BlockEntity {
 
     @Nullable
     public UUID nodeId() {
+        if (nodeId == null && level instanceof ServerLevel && !ManholeBlock.swapping) {
+            ensureRegistered();
+        }
         return nodeId;
     }
 
@@ -98,7 +101,7 @@ public class ManholeBlockEntity extends BlockEntity {
 
     @Override
     public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
+        CompoundTag tag = new CompoundTag();
         tag.putInt("rust", rust());
         return tag;
     }

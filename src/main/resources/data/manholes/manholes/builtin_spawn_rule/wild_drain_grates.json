@@ -2,7 +2,7 @@
   "type": "scatter",
   "chance_per_chunk": 0.003,
   "dimensions": ["minecraft:overworld"],
-  "biomes": ["#c:is_swamp", "#forge:is_swamp"],
+  "biomes": ["#forge:is_swamp"],
   "on_blocks": ["minecraft:grass_block", "minecraft:mud", "#minecraft:dirt"],
   "block": "manholes:grate",
   "min_distance": 256

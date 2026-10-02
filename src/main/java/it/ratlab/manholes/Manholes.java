@@ -34,6 +34,10 @@ public final class Manholes {
         ModRegistry.register(modBus);
         modBus.addListener(Manholes::addToTabs);
 
+        if (Boolean.getBoolean("manholes.gametests")) {
+            it.ratlab.manholes.test.ManholeGameTests.register(modBus);
+        }
+
         ManholeNetworking.init();
 
         MinecraftForge.EVENT_BUS.addListener(ManholeCommands::register);

@@ -1,0 +1,21 @@
+{
+  "type": "structure",
+  "structures": "#minecraft:village",
+  "chance": 1.0,
+  "max_per_structure": 1,
+  "name_from_structure": true,
+  "block": "manholes:hatch",
+  "min_distance": 64,
+  "placement": {
+    "surface_only": true,
+    "avoid_blocks": [
+      "#minecraft:leaves",
+      "minecraft:water"
+    ],
+    "margin": 2
+  },
+  "offset": [
+    6,
+    24
+  ]
+}
