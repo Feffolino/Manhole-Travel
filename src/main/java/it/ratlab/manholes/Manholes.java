@@ -52,6 +52,11 @@ public final class Manholes {
         if (ModList.get().isLoaded("ftbchunks")) {
             Hooks.enableFTBChunks();
         }
+
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
+            ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, it.ratlab.manholes.client.ManholesClientConfig.SPEC);
+            it.ratlab.manholes.client.ManholesClient.init(modBus);
+        }
     }
 
     public static ResourceLocation id(String path) {

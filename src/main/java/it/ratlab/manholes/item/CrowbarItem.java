@@ -30,5 +30,6 @@ public class CrowbarItem extends Item {
 
     @Override
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new it.ratlab.manholes.client.CrowbarPose());
     }
 }

@@ -203,6 +203,11 @@ public class ManholeBlockEntity extends BlockEntity {
         }
     }
 
+    @Override
+    public net.minecraft.world.phys.AABB getRenderBoundingBox() {
+        return new net.minecraft.world.phys.AABB(getBlockPos()).inflate(1.0, 0.5, 1.0).expandTowards(0, 0.5, 0);
+    }
+
     public boolean isHome() {
         return getBlockState().getBlock() instanceof ManholeBlock b && b.isHome();
     }
