@@ -1,7 +1,7 @@
-# Manhole Travel (`manholes`) 1.7.2
+# Manhole Travel (`manholes`) 1.7.0
 
 NeoForge 1.21.1 mod, MIT. Project layout mirrors `Desktop/omegafe` (MDK-1.21.1-ModDevGradle, MDG 2.0.147, Gradle 9.2.1).
-Build: `JAVA_HOME="/c/Program Files/Java/jdk-25" ./gradlew build` produces `build/libs/manholes-1.7.2.jar`.
+Build: `JAVA_HOME="/c/Program Files/Java/jdk-25" ./gradlew build` produces `build/libs/manholes-1.7.0.jar`.
 Public docs: `CURSEFORGE.md` (page text) and `README.md`.
 
 Manhole covers are found around the world. You pry one open while the noise draws the undead, and from then on it's a
@@ -14,33 +14,10 @@ KubeJS, FTB Teams and FTB Chunks (client) are `type="optional"` in `neoforge.mod
 `compat/ftbteams` and `compat/ftbchunks`, and those classes load only after a `ModList.isLoaded` check
 (`compat/Hooks`, `client/ManholesClient`). KubeJS finds the plugin through `kubejs.plugins.txt`.
 
-## 1.7.2 changes
-- **Covers at rest are in the chunk mesh.** Shader flashlights (Omega Flashlight with Sodium + Iris) light terrain
-  and block-entity geometry through different paths, so BER-drawn covers looked far too bright next to the ground.
-  `ManholeBlock.getRenderShape` is now `MODEL`; `CoverEvents` wraps every cover blockstate model in
-  `client/cover/CoverBakedModel` (`ModelEvent.ModifyBakingResult`). With a usable look it returns `base_open` /
-  `base_closed`, each lid part at its rest pose (t = 1 open / 0 closed, same `LidMath` matrix and facing rotation as
-  the renderer, applied with `QuadTransformers.applying`, face direction re-derived so shading is right) and the lid +
-  base condition overlays for the rust level. Quads only for `side == null` (moved parts no longer match their cull
-  faces), AO forced off (the part models are all `ambientocclusion: false`), each part under the render type its
-  model declares (solid / undeclared -> cutout, translucent stays translucent; `getRenderTypes` is the union). Built
-  once per (look, open, facing, condition) and cached per bake. Without a usable look the blockstate's own model is
-  used (as before, now in the mesh). Particles and the breaking crack come from the wrapped model (crack overlay now
-  works on covers).
-- **Model data** (`ManholeBlockEntity.getModelData`): `RUST` (effective level) and `ANIMATING`. The renderer
-  (`ManholeCoverRenderer`) draws only while `animating`; the mesh is empty meanwhile (`ChunkRenderTypeSet.none()`), so
-  there's never double geometry. `setBlockState` (client, open changed) sets `animating` = look usable and
-  `animateCovers` (the look-sound hook `clientAnimStarted` now returns it), refreshes the model data and marks the
-  section dirty with `UPDATE_IMMEDIATE`. When `gameTime - animStart + partialTick >= duration_ticks` the renderer calls
-  `finishAnimation()` (animating off, model data refresh, immediate rebuild) and still draws that frame. A cover
-  whose animation ended off-screen is handed back the next time the renderer sees it. A rust change from the server
-  (`handleUpdateTag`) re-meshes; a reload of `manholes-client.toml` (`showConditionOverlays`) calls
-  `levelRenderer.allChanged()`. `animateCovers = false`: never animating, covers snap in the mesh.
-- Tests: `coverMeshModelData` (render shape MODEL for every cover, model data keys, server no-ops). 33 tests in both
-  runs.
-
-## 1.7.1 changes
-- No ambush at home manholes (`travel.ambushAtHome`, default false) or in FTB Chunks claimed chunks (see Config).
+## 1.7.3 changes
+- **Reverted 1.7.2** (chunk-meshed covers at rest, `CoverBakedModel`): the swap between the chunk mesh and the BER at
+  animation start showed a one-frame blink. Covers are drawn by the BER again at all times, as in 1.7.1. Trade-off:
+  shader packs / flashlight mods (Omega Flashlight) don't light resting covers like the ground.
 
 ## 1.7.0 changes
 - **Covers in the wild** (built-in scatter rules, active only with `naturalSpawn = true`, overworld only, open sky and
@@ -232,9 +209,8 @@ KubeJS, FTB Teams and FTB Chunks (client) are `type="optional"` in `neoforge.mod
     (or a look on another block) is ignored and dropped on the next save.
   - Spawn rules pick the block: `"look"` (or its alias `"block"`) in the JSON and `.look(s)` / `.block(s)` in the
     builder accept both id kinds; an unknown one throws (the rule fails to load).
-  - **Rendering** (`client/cover`): since 1.7.2 the block uses `RenderShape.MODEL` and a cover at rest is built into
-    the chunk mesh by `CoverBakedModel` (see 1.7.2 changes); `ManholeCoverRenderer` (a BER, view distance 256, 3x2x3
-    cull box) draws the look only while it animates. The blockstate files are
+  - **Rendering** (`client/cover`): the block uses `RenderShape.ENTITYBLOCK_ANIMATED`, so the chunk mesh draws nothing.
+    `ManholeCoverRenderer` (a BER, view distance 256, 3x2x3 cull box) draws the look. The blockstate files are
     name the static models (`variant_<look>` for the new blocks), which are used for particles and as the fallback.
     Parts drawn with the block's default render type (solid) are drawn cutout instead, so ladders, trapdoors and grates
     keep their holes; parts with their own `render_type` keep it.
@@ -775,7 +751,7 @@ Binding `Manholes`. A `nodeId` is the full UUID or a unique prefix of at least 4
     full solid floor, no fluid on or next to it) and the spacing again; the rule's `on_blocks` / `avoid_blocks` /
     biome filters are not re-applied (the script chose the spot). An invalid move skips the placement with a warning.
 
-33. **Covers are block-entity rendered** (1.3.0; since 1.7.2 only while animating, see 1.7.2 changes): `ENTITYBLOCK_ANIMATED` instead of an empty blockstate model, so the
+33. **Covers are block-entity rendered** (1.3.0): `ENTITYBLOCK_ANIMATED` instead of an empty blockstate model, so the
     blockstate files didn't change and still give particles and the static fallback. A side effect is that there's no
     block-breaking crack overlay on home manholes (vanilla only draws it for `MODEL` shapes). The BER view distance is
     256 blocks.
@@ -826,9 +802,5 @@ Binding `Manholes`. A `nodeId` is the full UUID or a unique prefix of at least 4
 - The `pried`, `travel` and `arrived` KubeJS events were not run.
 - Other players don't see the crowbar pry pose (only the local player's pry state is known client-side).
 - There's no advancement integration, as the spec intends.
-- 1.7.2, not play-tested: the chunk-meshed covers (every look open / closed / all four facings, rust overlays,
-  translucent hatch overlays, the switch between mesh and renderer at animation start / end without a blink or a
-  ghost lid, Sodium + Iris, Omega Flashlight). Terrain shading (per-face shade) replaces entity lighting, so faces can
-  look slightly different from 1.7.1 (intended: like the surrounding blocks).
 - 1.7.0, not play-tested: the wide outline / collision in a real client (diagonal corners of the overhang are skipped by
   vanilla's collision scan, like any large shape), the translucent overlay sorting, the wild rules' real frequency.

@@ -19,8 +19,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -52,22 +50,9 @@ public class ManholeBlockEntity extends BlockEntity {
     // Client-side animation state (never saved).
     /** Game time the last open/close animation started, or Long.MIN_VALUE (show the end state). */
     public long animStart = Long.MIN_VALUE;
-    /**
-     * 1.7.2: true while the block entity renderer draws the moving cover; the chunk mesh leaves the cover out meanwhile
-     * (model data {@link #ANIMATING}). At rest the cover is part of the chunk mesh and the renderer draws nothing.
-     */
-    public boolean animating;
-    /**
-     * Set by the client: called on the client when a cover's open state changes (plays the look's sound). Returns true
-     * if the change is animated (a usable look and {@code animateCovers}).
-     */
+    /** Set by the client: called on the client when a cover's open state changes (plays the look's sound). */
     @Nullable
-    public static java.util.function.Predicate<ManholeBlockEntity> clientAnimStarted;
-
-    /** 1.7.2 model data (client): the effective rust level 0..3, for the condition overlays in the chunk mesh. */
-    public static final ModelProperty<Integer> RUST = new ModelProperty<>();
-    /** 1.7.2 model data (client): true while the renderer animates the cover (the chunk mesh is empty then). */
-    public static final ModelProperty<Boolean> ANIMATING = new ModelProperty<>();
+    public static java.util.function.Consumer<ManholeBlockEntity> clientAnimStarted;
 
     public ManholeBlockEntity(BlockPos pos, BlockState state) {
         super(ModRegistry.MANHOLE_BE.get(), pos, state);
@@ -143,40 +128,7 @@ public class ManholeBlockEntity extends BlockEntity {
     @Override
     public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
         if (tag.contains("rust")) {
-            int before = rust();
             rust = Math.max(0, Math.min(3, tag.getInt("rust")));
-            if (rust() != before) {
-                refreshMesh(false); // 1.7.2: the condition overlays are in the chunk mesh
-            }
-        }
-    }
-
-    /** 1.7.2 (client): rust level and animation state for {@code CoverBakedModel}. Always called on the client thread. */
-    @Override
-    public ModelData getModelData() {
-        return ModelData.builder().with(RUST, rust()).with(ANIMATING, animating).build();
-    }
-
-    /**
-     * 1.7.2 (client): the model data changed; refresh it and rebuild this cover's chunk section ({@code immediate} =
-     * on the main thread in the next frame, used when switching between the animated renderer and the mesh so there's
-     * no frame without a cover). No-op on the server.
-     */
-    public void refreshMesh(boolean immediate) {
-        if (level == null || !level.isClientSide) {
-            return;
-        }
-        requestModelDataUpdate();
-        BlockState s = getBlockState();
-        level.sendBlockUpdated(worldPosition, s, s, immediate ? net.minecraft.world.level.block.Block.UPDATE_IMMEDIATE : 0);
-    }
-
-    /** 1.7.2 (client): the renderer saw the animation reach its end; hand the cover back to the chunk mesh. */
-    public void finishAnimation() {
-        if (animating) {
-            animating = false;
-            animStart = Long.MIN_VALUE;
-            refreshMesh(true);
         }
     }
 
@@ -312,10 +264,9 @@ public class ManholeBlockEntity extends BlockEntity {
         if (level != null && level.isClientSide && state.hasProperty(ManholeBlock.OPEN) && before.hasProperty(ManholeBlock.OPEN)
                 && before.getValue(ManholeBlock.OPEN) != state.getValue(ManholeBlock.OPEN)) {
             animStart = level.getGameTime();
-            animating = clientAnimStarted != null && clientAnimStarted.test(this);
-            // 1.7.2: the chunk section is rebuilt for the state change anyway; refresh the model data first and ask
-            // for an immediate rebuild so the static cover leaves the mesh when the animation starts.
-            refreshMesh(true);
+            if (clientAnimStarted != null) {
+                clientAnimStarted.accept(this);
+            }
         }
     }
 

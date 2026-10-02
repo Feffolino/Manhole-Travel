@@ -281,14 +281,10 @@ public final class CoverLooks {
 
     // ---------------------------------------------------------------- sound
 
-    /**
-     * Client: the cover's open state just changed; play the look's sound at the start of the animation. Returns true if
-     * the change is animated by {@link ManholeCoverRenderer} (usable look and {@code animateCovers}); otherwise the
-     * cover just snaps to its new state in the chunk mesh.
-     */
-    public static boolean onAnimStarted(ManholeBlockEntity be) {
+    /** Client: the cover's open state just changed; play the look's sound at the start of the animation. */
+    public static void onAnimStarted(ManholeBlockEntity be) {
         if (be.getLevel() == null) {
-            return false;
+            return;
         }
         boolean open = be.getBlockState().getValue(it.ratlab.manholes.block.ManholeBlock.OPEN);
         Look l = looks.get(be.look());
@@ -297,7 +293,6 @@ public final class CoverLooks {
             be.getLevel().playLocalSound(be.getBlockPos(), SoundEvent.createVariableRangeEvent(s), SoundSource.BLOCKS, 0.8f,
                     open ? 1.0f : 0.9f, false);
         }
-        return it.ratlab.manholes.client.ManholesClientConfig.animateCovers() && get(be.look()) != null;
     }
 
     /** For tests / debugging. */

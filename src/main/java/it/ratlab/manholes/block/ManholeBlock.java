@@ -186,10 +186,8 @@ public class ManholeBlock extends BaseEntityBlock {
 
     @Override
     protected RenderShape getRenderShape(BlockState state) {
-        // 1.7.2: at rest the cover is in the chunk mesh (client CoverBakedModel wraps the blockstate model and builds
-        // the look's quads); ManholeCoverRenderer only draws while the lid is moving. BaseEntityBlock's default is
-        // INVISIBLE, so this must stay MODEL.
-        return RenderShape.MODEL;
+        // Drawn by ManholeCoverRenderer (animated lid); the blockstate model is only used for particles and fallback.
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override

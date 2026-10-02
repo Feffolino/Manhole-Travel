@@ -4,8 +4,6 @@
   files (`manhole`, `home_manhole`, then `hatch`, `grate`, `cave`, `city`), look sounds, `animateCovers = false`, the
   travel popup buttons (normal / hover / pressed / disabled), the map icon with a 16x16 texture, per-look flavour lines,
   the Italian translation.
-- [ ] 1.7.2: check the chunk-meshed covers in game (open / closed / animating, every look, rust overlays, facings,
-  Sodium + Iris + Omega Flashlight: covers lit like the ground, no blink at animation start / end).
 - [ ] CurseForge page: GIFs / screenshots, a real `displayURL` in `neoforge.mods.toml` (placeholder now), and
   `src/main/resources/manholes_logo.png` (referenced by `logoFile`; the art side provides it).
 - [ ] Optional: per-look sounds for prying phases and a per-look HUD name (the HUD phase text is generic for now).
