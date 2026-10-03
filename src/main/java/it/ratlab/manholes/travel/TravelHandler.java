@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -54,6 +55,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
@@ -95,11 +97,17 @@ public final class TravelHandler {
         final boolean scripted;
         final boolean animated;
         Vec3 anchor;
+        Vec3 landingSpot;
+        float landingYaw;
         int teleportTick;
+        int ascentTick;
         int endTick;
-        boolean arrived;
+        CompletableFuture<?> chunkFuture;
+        boolean teleported;
+        boolean ascentStarted;
 
-        Session(UUID nodeId, ResourceKey<Level> dimension, BlockPos destPos, Vec3 startPos, boolean scripted, boolean animated, Vec3 anchor, int teleportTick, int endTick) {
+        Session(UUID nodeId, ResourceKey<Level> dimension, BlockPos destPos, Vec3 startPos, boolean scripted, boolean animated, Vec3 anchor,
+                int teleportTick, int ascentTick, int endTick, CompletableFuture<?> chunkFuture) {
             this.nodeId = nodeId;
             this.dimension = dimension;
             this.destPos = destPos;
@@ -108,7 +116,9 @@ public final class TravelHandler {
             this.animated = animated;
             this.anchor = anchor;
             this.teleportTick = teleportTick;
+            this.ascentTick = ascentTick;
             this.endTick = endTick;
+            this.chunkFuture = chunkFuture;
         }
     }
 
@@ -385,18 +395,24 @@ public final class TravelHandler {
         player.stopRiding();
         int now = player.server.getTickCount();
         Vec3 startPos = player.position();
+        CompletableFuture<?> chunkFuture = null;
         ServerLevel destLevel = player.server.getLevel(to.dimension);
         if (destLevel != null) {
-            destLevel.getChunkSource().addRegionTicket(TRAVEL_PRELOAD, new ChunkPos(to.pos), 2, player.getUUID());
+            destLevel.getChunkSource().addRegionTicket(TRAVEL_PRELOAD, new ChunkPos(to.pos), 4, player.getUUID());
+            chunkFuture = destLevel.getChunkSource().getChunkFuture(to.pos.getX() >> 4, to.pos.getZ() >> 4, ChunkStatus.FULL, true);
         }
         boolean animated = ManholesConfig.b(ManholesConfig.ANIMATION_ENABLED);
         if (!animated) {
-            SESSIONS.put(player.getUUID(), new Session(to.id, to.dimension, to.pos, startPos, scripted, false, startPos, now + fade, now + fade));
+            SESSIONS.put(player.getUUID(), new Session(to.id, to.dimension, to.pos, startPos, scripted, false, startPos, now + fade, now + fade, now + fade, chunkFuture));
             freeze(player, true);
             send(player, new FadePayload(fade));
             return;
         }
         int descent = ManholesConfig.i(ManholesConfig.DESCENT_TICKS);
+        int ascent = ManholesConfig.i(ManholesConfig.ASCENT_TICKS);
+        int teleportTick = now + descent + 5;
+        int ascentTick = Math.max(teleportTick + 20, now + descent + fade);
+        int endTick = ascentTick + ascent;
         // Step onto the centre of the cover we're going down (server-validated final position); without a start
         // cover (scripted trip far from any manhole) the player climbs down where he stands.
         Vec3 cover = startPos;
@@ -410,8 +426,8 @@ public final class TravelHandler {
         send(player, new TravelAnimPayload(TravelAnimPayload.DESCENT, startPos, player.getYRot(), player.getXRot(), cover, yaw,
                 cover, descent, fade));
         player.connection.teleport(cover.x, cover.y, cover.z, yaw, player.getXRot());
-        SESSIONS.put(player.getUUID(), new Session(to.id, to.dimension, to.pos, startPos, scripted, true, cover, now + descent + fade,
-                now + descent + fade + ManholesConfig.i(ManholesConfig.ASCENT_TICKS)));
+        SESSIONS.put(player.getUUID(), new Session(to.id, to.dimension, to.pos, startPos, scripted, true, cover,
+                teleportTick, ascentTick, endTick, chunkFuture));
         freeze(player, true);
     }
 
@@ -423,6 +439,8 @@ public final class TravelHandler {
     }
 
     private static void freeze(ServerPlayer player, boolean on) {
+        player.setNoGravity(on);
+        player.setDeltaMovement(Vec3.ZERO);
         AttributeInstance speed = player.getAttribute(Attributes.MOVEMENT_SPEED);
         AttributeInstance jump = player.getAttribute(Attributes.JUMP_STRENGTH);
         for (AttributeInstance a : new AttributeInstance[] {speed, jump}) {
@@ -459,22 +477,28 @@ public final class TravelHandler {
                 it.remove();
                 continue;
             }
-            if (!s.arrived && now >= s.teleportTick) {
-                s.arrived = true;
-                actions.add(() -> arrive(player, s));
-            } else if (s.arrived && now >= s.endTick) {
+            if (!s.teleported && now >= s.teleportTick) {
+                if (s.chunkFuture == null || s.chunkFuture.isDone()) {
+                    s.teleported = true;
+                    actions.add(() -> teleportToDestination(player, s));
+                }
+            } else if (s.teleported && !s.ascentStarted && now >= s.ascentTick) {
+                s.ascentStarted = true;
+                actions.add(() -> startAscent(player, s));
+            } else if (s.ascentStarted && now >= s.endTick) {
                 it.remove();
                 actions.add(() -> finish(player, s));
             } else if (player.position().distanceToSqr(s.anchor) > 0.25) {
                 // Immobile: undo any push / knockback.
+                player.setDeltaMovement(Vec3.ZERO);
                 player.connection.teleport(s.anchor.x, s.anchor.y, s.anchor.z, player.getYRot(), player.getXRot());
             }
         }
         actions.forEach(Runnable::run); // teleports change dimensions: never inside the iteration
     }
 
-    /** The teleport (the middle of the trip). Arrival effects come in {@link #finish} after the ascent. */
-    private static void arrive(ServerPlayer player, Session s) {
+    /** Step 1: Teleport the player to the destination while still 100% black, giving chunks time to load. */
+    private static void teleportToDestination(ServerPlayer player, Session s) {
         MinecraftServer server = player.server;
         NodeRecord to = ManholeData.get(server).node(s.nodeId);
         ServerLevel level = to == null ? null : server.getLevel(to.dimension);
@@ -482,7 +506,7 @@ public final class TravelHandler {
             abort(player, s);
             return;
         }
-        level.getChunk(to.pos); // load (or generate) the destination chunk
+        level.getChunk(to.pos); // already loaded by future & ticket
         BlockState cover = level.getBlockState(to.pos);
         if (!(cover.getBlock() instanceof ManholeBlock) || !(level.getBlockEntity(to.pos) instanceof ManholeBlockEntity be)
                 || !to.id.equals(be.nodeId())) {
@@ -516,24 +540,46 @@ public final class TravelHandler {
             spot = coverTop(level, to.pos); // on the cover itself
         }
         player.teleportTo(level, spot.x, spot.y, spot.z, yaw, 0.0f);
+        player.setNoGravity(true);
+        player.setDeltaMovement(Vec3.ZERO);
         player.fallDistance = 0;
         s.anchor = spot;
+        s.landingSpot = spot;
+        s.landingYaw = yaw;
         COOLDOWN_UNTIL.put(player.getUUID(), server.getTickCount() + ManholesConfig.i(ManholesConfig.TRAVEL_COOLDOWN_TICKS));
-        level.playSound(null, to.pos, ModRegistry.SOUND_ARRIVE.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
-        if (s.animated) {
-            int ascent = Math.max(0, s.endTick - server.getTickCount());
-            send(player, new TravelAnimPayload(TravelAnimPayload.ASCENT, spot, yaw, 0f, coverTop(level, to.pos), yaw, spot, ascent, 0));
-        } else {
+        if (!s.animated) {
+            level.playSound(null, to.pos, ModRegistry.SOUND_ARRIVE.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
             SESSIONS.remove(player.getUUID());
             finish(player, s);
+        } else {
+            int now = server.getTickCount();
+            if (s.ascentTick < now + 15) {
+                int ascent = ManholesConfig.i(ManholesConfig.ASCENT_TICKS);
+                s.ascentTick = now + 15;
+                s.endTick = s.ascentTick + ascent;
+            }
         }
+    }
+
+    /** Step 2: Chunks and client meshes are settled; begin the ascent animation. */
+    private static void startAscent(ServerPlayer player, Session s) {
+        MinecraftServer server = player.server;
+        NodeRecord to = ManholeData.get(server).node(s.nodeId);
+        ServerLevel level = to == null ? null : server.getLevel(to.dimension);
+        if (to == null || level == null) {
+            abort(player, s);
+            return;
+        }
+        level.playSound(null, to.pos, ModRegistry.SOUND_ARRIVE.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
+        int ascent = Math.max(0, s.endTick - server.getTickCount());
+        send(player, new TravelAnimPayload(TravelAnimPayload.ASCENT, s.landingSpot, s.landingYaw, 0f, coverTop(level, to.pos), s.landingYaw, s.landingSpot, ascent, 0));
     }
 
     private static void releasePreload(MinecraftServer server, Session s, UUID playerId) {
         if (s.destPos != null && s.dimension != null) {
             ServerLevel level = server.getLevel(s.dimension);
             if (level != null) {
-                level.getChunkSource().removeRegionTicket(TRAVEL_PRELOAD, new ChunkPos(s.destPos), 2, playerId);
+                level.getChunkSource().removeRegionTicket(TRAVEL_PRELOAD, new ChunkPos(s.destPos), 4, playerId);
             }
         }
     }
@@ -738,7 +784,7 @@ public final class TravelHandler {
             if (event.getEntity() instanceof ServerPlayer p) {
                 // Fired before the player is saved: never leave him mid-climb on the cover or half-way somewhere.
                 freeze(p, false);
-                Vec3 safe = s.arrived ? s.anchor : s.startPos;
+                Vec3 safe = s.teleported ? s.anchor : s.startPos;
                 p.setPos(safe.x, safe.y, safe.z);
             }
         }

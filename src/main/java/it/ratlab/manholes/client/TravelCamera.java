@@ -130,15 +130,16 @@ public final class TravelCamera {
             mc.getSoundManager().play(SimpleSoundInstance.forUI(ModRegistry.SOUND_LADDER.get(),
                     0.9f + mc.level.random.nextFloat() * 0.2f, 0.7f));
         }
-        if (!descent && age >= t) {
-            LocalPlayer p = mc.player;
-            p.setYRot(anim.yaw());
-            p.setXRot(0f);
-            p.yRotO = anim.yaw();
-            p.xRotO = 0f;
+        if (age >= t) {
+            if (!descent) {
+                LocalPlayer p = mc.player;
+                p.setYRot(anim.yaw());
+                p.setXRot(0f);
+                p.yRotO = anim.yaw();
+                p.xRotO = 0f;
+            }
             stop();
         }
-        // A descent just holds at the bottom (black) until the ascent or FadeOverlay's safety timeout.
     }
 
     private static float smooth(float x) {
