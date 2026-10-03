@@ -49,3 +49,8 @@ libs/
 run-kubejs/
 __pycache__/
 *.pyc
+
+# AI prompt files
+PROMPT.md
+prompt.md
+
