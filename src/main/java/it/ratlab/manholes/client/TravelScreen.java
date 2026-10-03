@@ -327,6 +327,7 @@ public class TravelScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(g);
         super.render(g, mouseX, mouseY, partialTick);
         Entry hov = inPopup(mouseX, mouseY) ? null : dotAt(mouseX, mouseY);
         if (hov == null && !inPopup(mouseX, mouseY)) {

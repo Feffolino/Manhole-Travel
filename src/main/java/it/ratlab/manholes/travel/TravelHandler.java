@@ -30,10 +30,12 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
@@ -50,6 +52,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
@@ -70,6 +74,7 @@ import org.jetbrains.annotations.Nullable;
 /** Travel screen data, trip validation, costs, the fade, the teleport and ambushes. Server authoritative. */
 public final class TravelHandler {
     private static final UUID FREEZE_ID = UUID.fromString("b8c0df11-2e6b-4bcf-a5a4-9e7f7bbba601");
+    private static final TicketType<UUID> TRAVEL_PRELOAD = TicketType.create("manholes_travel", UUID::compareTo, 200);
     /** Max distance from the manhole the travel screen was opened at. */
     private static final double USE_RANGE = 8.0;
 
@@ -83,6 +88,8 @@ public final class TravelHandler {
      */
     private static final class Session {
         final UUID nodeId;
+        final ResourceKey<Level> dimension;
+        final BlockPos destPos;
         /** Where the player stood when the trip started (restored if he logs out before the teleport). */
         final Vec3 startPos;
         final boolean scripted;
@@ -92,8 +99,10 @@ public final class TravelHandler {
         int endTick;
         boolean arrived;
 
-        Session(UUID nodeId, Vec3 startPos, boolean scripted, boolean animated, Vec3 anchor, int teleportTick, int endTick) {
+        Session(UUID nodeId, ResourceKey<Level> dimension, BlockPos destPos, Vec3 startPos, boolean scripted, boolean animated, Vec3 anchor, int teleportTick, int endTick) {
             this.nodeId = nodeId;
+            this.dimension = dimension;
+            this.destPos = destPos;
             this.startPos = startPos;
             this.scripted = scripted;
             this.animated = animated;
@@ -376,9 +385,13 @@ public final class TravelHandler {
         player.stopRiding();
         int now = player.server.getTickCount();
         Vec3 startPos = player.position();
+        ServerLevel destLevel = player.server.getLevel(to.dimension);
+        if (destLevel != null) {
+            destLevel.getChunkSource().addRegionTicket(TRAVEL_PRELOAD, new ChunkPos(to.pos), 2, player.getUUID());
+        }
         boolean animated = ManholesConfig.b(ManholesConfig.ANIMATION_ENABLED);
         if (!animated) {
-            SESSIONS.put(player.getUUID(), new Session(to.id, startPos, scripted, false, startPos, now + fade, now + fade));
+            SESSIONS.put(player.getUUID(), new Session(to.id, to.dimension, to.pos, startPos, scripted, false, startPos, now + fade, now + fade));
             freeze(player, true);
             send(player, new FadePayload(fade));
             return;
@@ -397,7 +410,7 @@ public final class TravelHandler {
         send(player, new TravelAnimPayload(TravelAnimPayload.DESCENT, startPos, player.getYRot(), player.getXRot(), cover, yaw,
                 cover, descent, fade));
         player.connection.teleport(cover.x, cover.y, cover.z, yaw, player.getXRot());
-        SESSIONS.put(player.getUUID(), new Session(to.id, startPos, scripted, true, cover, now + descent + fade,
+        SESSIONS.put(player.getUUID(), new Session(to.id, to.dimension, to.pos, startPos, scripted, true, cover, now + descent + fade,
                 now + descent + fade + ManholesConfig.i(ManholesConfig.ASCENT_TICKS)));
         freeze(player, true);
     }
@@ -442,6 +455,7 @@ public final class TravelHandler {
                 if (player != null) {
                     freeze(player, false);
                 }
+                releasePreload(server, s, e.getKey());
                 it.remove();
                 continue;
             }
@@ -515,9 +529,19 @@ public final class TravelHandler {
         }
     }
 
+    private static void releasePreload(MinecraftServer server, Session s, UUID playerId) {
+        if (s.destPos != null && s.dimension != null) {
+            ServerLevel level = server.getLevel(s.dimension);
+            if (level != null) {
+                level.getChunkSource().removeRegionTicket(TRAVEL_PRELOAD, new ChunkPos(s.destPos), 2, playerId);
+            }
+        }
+    }
+
     /** End of the trip: control comes back, then the arrival message, the arrived event and the ambush roll. */
     private static void finish(ServerPlayer player, Session s) {
         freeze(player, false);
+        releasePreload(player.server, s, player.getUUID());
         NodeRecord to = ManholeData.get(player.server).node(s.nodeId);
         if (to == null) {
             return;
@@ -534,6 +558,7 @@ public final class TravelHandler {
     private static void abort(ServerPlayer player, Session s) {
         SESSIONS.remove(player.getUUID());
         freeze(player, false);
+        releasePreload(player.server, s, player.getUUID());
         player.connection.teleport(s.startPos.x, s.startPos.y, s.startPos.z, player.getYRot(), player.getXRot());
         send(player, new FadePayload(0));
         player.displayClientMessage(Component.translatable("manholes.travel.blocked.node_gone"), true);
@@ -705,11 +730,17 @@ public final class TravelHandler {
     private static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         UUID id = event.getEntity().getUUID();
         Session s = SESSIONS.remove(id);
-        if (s != null && event.getEntity() instanceof ServerPlayer p) {
-            // Fired before the player is saved: never leave him mid-climb on the cover or half-way somewhere.
-            freeze(p, false);
-            Vec3 safe = s.arrived ? s.anchor : s.startPos;
-            p.setPos(safe.x, safe.y, safe.z);
+        if (s != null) {
+            MinecraftServer server = event.getEntity().getServer();
+            if (server != null) {
+                releasePreload(server, s, id);
+            }
+            if (event.getEntity() instanceof ServerPlayer p) {
+                // Fired before the player is saved: never leave him mid-climb on the cover or half-way somewhere.
+                freeze(p, false);
+                Vec3 safe = s.arrived ? s.anchor : s.startPos;
+                p.setPos(safe.x, safe.y, safe.z);
+            }
         }
         LAST_HURT.remove(id);
         ManholeInteraction.forget(id);

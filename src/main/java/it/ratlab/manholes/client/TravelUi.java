@@ -3,18 +3,18 @@ package it.ratlab.manholes.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 
 /**
- * Hides the whole HUD (hotbar, hand, crosshair, chat, FTB Chunks' minimap, which checks {@code hideGui} itself) while a
- * trip runs: from the start of the descent / fade until the ascent / fade-in is over. The player's own {@code hideGui}
- * (F1) is restored at the end, when the trip is cancelled and on disconnect. Our fade overlay is a mod GUI layer that
- * Forge draws regardless of {@code hideGui}.
+ * Hides all HUD overlays (hotbar, health, crosshair, chat, mod overlays, etc.) while a trip runs:
+ * from the start of the descent / fade until the ascent / fade-in is over.
+ * Cancels Forge GUI overlay events instead of toggling {@code mc.options.hideGui}, so Minecraft's
+ * GUI render pass remains active and draws our fade overlay.
  */
 public final class TravelUi {
     private static boolean hiding;
-    private static boolean previous;
 
     private TravelUi() {}
 
@@ -25,6 +25,11 @@ public final class TravelUi {
             }
         });
         MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut e) -> restore());
+        MinecraftForge.EVENT_BUS.addListener((RenderGuiOverlayEvent.Pre e) -> {
+            if (hiding && !e.getOverlay().id().getPath().equals("travel_fade")) {
+                e.setCanceled(true);
+            }
+        });
     }
 
     public static boolean hiding() {
@@ -33,23 +38,16 @@ public final class TravelUi {
 
     /** Called when a trip starts (also from the payload handlers, so the first frame is already clean). */
     static void begin() {
-        Minecraft mc = Minecraft.getInstance();
-        if (!hiding) {
-            previous = mc.options.hideGui;
-            hiding = true;
-        }
-        mc.options.hideGui = true;
+        hiding = true;
     }
 
     static void restore() {
-        if (hiding) {
-            hiding = false;
-            Minecraft.getInstance().options.hideGui = previous;
-        }
+        hiding = false;
     }
 
     private static void update() {
-        boolean travelling = Minecraft.getInstance().level != null && (FadeOverlay.active() || TravelCamera.active());
+        Minecraft mc = Minecraft.getInstance();
+        boolean travelling = mc.level != null && (FadeOverlay.active() || TravelCamera.active());
         if (travelling) {
             begin();
         } else {

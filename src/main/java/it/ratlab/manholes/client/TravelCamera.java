@@ -72,12 +72,12 @@ public final class TravelCamera {
         MinecraftForge.EVENT_BUS.addListener(TravelCamera::onAngles);
         MinecraftForge.EVENT_BUS.addListener(TravelCamera::onFov);
         MinecraftForge.EVENT_BUS.addListener((RenderHandEvent e) -> {
-            if (anim != null) {
+            if (anim != null || FadeOverlay.active()) {
                 e.setCanceled(true);
             }
         });
         MinecraftForge.EVENT_BUS.addListener((RenderHighlightEvent.Block e) -> {
-            if (anim != null) {
+            if (anim != null || FadeOverlay.active()) {
                 e.setCanceled(true);
             }
         });
