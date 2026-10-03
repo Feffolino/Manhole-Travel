@@ -46,6 +46,7 @@ public final class ManholesClient {
             }
             FadeOverlay.start(p.ticks());
         };
+        ManholeNetworking.clientTravelAnim = TravelCamera::onPayload;
         TravelCamera.init();
         ClientNetwork.init();
         ManholeNetworking.clientNetworkSync = ClientNetwork::onSync;

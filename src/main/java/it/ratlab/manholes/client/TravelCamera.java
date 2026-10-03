@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 package it.ratlab.manholes.client;
 
+import it.ratlab.manholes.Manholes;
 import it.ratlab.manholes.ModRegistry;
 import it.ratlab.manholes.net.TravelAnimPayload;
 import net.minecraft.client.Camera;
@@ -53,7 +54,9 @@ public final class TravelCamera {
         if (SET_POSITION != null) {
             try {
                 SET_POSITION.invokeExact(camera, pos);
-            } catch (Throwable ignored) {}
+            } catch (Throwable t) {
+                Manholes.LOGGER.warn("Failed to set camera position", t);
+            }
         }
     }
 
@@ -180,10 +183,13 @@ public final class TravelCamera {
         e.setYaw(p.yaw());
         e.setPitch(p.pitch());
         e.setRoll(0f);
+        if (!e.getCamera().isDetached()) {
+            setCameraPosition(e.getCamera(), p.eye());
+        }
     }
 
     private static void onFov(ViewportEvent.ComputeFov e) {
-        if (anim == null || !e.usedConfiguredFov()) {
+        if (anim == null) {
             return;
         }
         Camera camera = e.getCamera();
